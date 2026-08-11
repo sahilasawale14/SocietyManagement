@@ -55,6 +55,19 @@ public class Dashboard extends JFrame {
             button.setBorderPainted(false);
             button.setHorizontalAlignment(SwingConstants.LEFT);
 
+            // Button actions
+            if (text.equals("Residents")) {
+                button.addActionListener(e -> new ResidentsPage());
+            }
+
+            if (text.equals("Flats")) {
+                button.addActionListener(e -> new FlatPage());
+            }
+
+            if (text.equals("Visitors")) {
+                button.addActionListener(e -> new VisitorPage());
+            }
+
             menu.add(button);
         }
 
