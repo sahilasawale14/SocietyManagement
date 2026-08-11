@@ -68,6 +68,23 @@ public class Dashboard extends JFrame {
                 button.addActionListener(e -> new VisitorPage());
             }
 
+            if (text.equals("Complaints")) {
+                button.addActionListener(e -> new ComplaintPage());
+            }
+
+            if (text.equals("Payments")) {
+                button.addActionListener(e -> new PaymentPage());
+            }
+
+            if (text.equals("Staff")) {
+                button.addActionListener(e -> new StaffPage());
+            }
+
+            if (text.equals("Notices")) {
+                button.addActionListener(e -> new NoticePage());
+            }
+
+
             menu.add(button);
         }
 
