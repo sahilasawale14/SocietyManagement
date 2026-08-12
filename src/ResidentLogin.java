@@ -81,10 +81,11 @@ public class ResidentLogin extends JFrame {
 
             if (rs.next()) {
 
-                JOptionPane.showMessageDialog(this,
-                        "Login successful!");
+                int residentId = rs.getInt("resident_id");
 
-                new ResidentDashboard();
+                JOptionPane.showMessageDialog(this, "Login successful!");
+
+                new ResidentDashboard(residentId);
 
                 dispose();
 
@@ -92,8 +93,8 @@ public class ResidentLogin extends JFrame {
 
                 JOptionPane.showMessageDialog(this,
                         "Invalid username or password.");
-
             }
+
 
             rs.close();
             pst.close();
