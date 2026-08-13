@@ -1,3 +1,6 @@
+package resident;
+import util.DatabaseConnection;
+import util.DatabaseConnection;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,13 +65,7 @@ public class ResidentLogin extends JFrame {
 
         try {
 
-            Connection con = DriverManager.getConnection(
-                    "jdbc" +
-                            ":mysql://localhost:3306/society_management",
-                    "root",
-                    "Sahil" +
-                            "@135678"
-            );
+            Connection con = DatabaseConnection.getConnection();
 
             String sql = "SELECT * FROM RESIDENT WHERE username = ? AND password = ?";
 
@@ -94,7 +91,6 @@ public class ResidentLogin extends JFrame {
                 JOptionPane.showMessageDialog(this,
                         "Invalid username or password.");
             }
-
 
             rs.close();
             pst.close();

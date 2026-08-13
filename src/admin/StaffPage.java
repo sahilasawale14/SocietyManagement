@@ -1,34 +1,37 @@
+package admin;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 
-public class VisitorPage extends JFrame {
+public class StaffPage extends JFrame {
 
     JTable table;
     DefaultTableModel model;
 
-    public VisitorPage() {
+    public StaffPage() {
 
-        setTitle("Visitors");
-        setSize(900, 550);
+        setTitle("Staff");
+        setSize(1000, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel title = new JLabel("Visitors");
+        JLabel title = new JLabel("Staff");
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        JButton addButton = new JButton("+ Add Visitor");
-        addButton.addActionListener(e -> openAddVisitorForm());
+        JButton addButton = new JButton("+ Add Staff");
+        addButton.addActionListener(e -> openAddStaffForm());
 
         JButton editButton = new JButton("Edit");
-        editButton.addActionListener(e -> editVisitor());
+        editButton.addActionListener(e -> editStaff());
 
         JButton deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(e -> deleteVisitor());
+        deleteButton.addActionListener(e -> deleteStaff());
 
         JPanel buttons = new JPanel();
         buttons.add(addButton);
@@ -45,7 +48,7 @@ public class VisitorPage extends JFrame {
 
         JButton searchButton = new JButton("Search");
         searchButton.addActionListener(
-                e -> searchVisitors(searchField.getText())
+                e -> searchStaff(searchField.getText())
         );
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -61,8 +64,12 @@ public class VisitorPage extends JFrame {
 
         // Table
         String[] columns = {
-                "ID", "Flat ID", "Visitor Name",
-                "Entry Time", "Exit Time", "Purpose", "Phone"
+                "Staff ID",
+                "Name",
+                "Role",
+                "Join Date",
+                "Salary",
+                "Phone"
         };
 
         model = new DefaultTableModel(columns, 0);
@@ -72,34 +79,36 @@ public class VisitorPage extends JFrame {
 
         add(mainPanel);
 
-        loadVisitors();
+        loadStaff();
 
         setVisible(true);
     }
 
-    private void loadVisitors() {
+    private void loadStaff() {
 
         try {
+
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM VISITOR";
+            String sql = "SELECT * FROM STAFF";
+
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(sql);
 
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                        rs.getInt("visitor_id"),
-                        rs.getInt("flat_id"),
-                        rs.getString("visitor_name"),
-                        rs.getTime("entry_time"),
-                        rs.getTime("exit_time"),
-                        rs.getString("purpose"),
+                        rs.getInt("staff_id"),
+                        rs.getString("name"),
+                        rs.getString("role"),
+                        rs.getDate("join_date"),
+                        rs.getDouble("salary"),
                         rs.getString("phone")
                 });
             }
 
         } catch (Exception e) {
+
             JOptionPane.showMessageDialog(
                     this,
                     "Error: " + e.getMessage()
@@ -107,31 +116,27 @@ public class VisitorPage extends JFrame {
         }
     }
 
-    private void openAddVisitorForm() {
+    private void openAddStaffForm() {
 
-        JTextField flatIdField = new JTextField();
-        JTextField visitorNameField = new JTextField();
-        JTextField entryTimeField = new JTextField();
-        JTextField exitTimeField = new JTextField();
-        JTextField purposeField = new JTextField();
+        JTextField nameField = new JTextField();
+        JTextField roleField = new JTextField();
+        JTextField joinDateField = new JTextField();
+        JTextField salaryField = new JTextField();
         JTextField phoneField = new JTextField();
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
 
-        panel.add(new JLabel("Flat ID:"));
-        panel.add(flatIdField);
+        panel.add(new JLabel("Name:"));
+        panel.add(nameField);
 
-        panel.add(new JLabel("Visitor Name:"));
-        panel.add(visitorNameField);
+        panel.add(new JLabel("Role:"));
+        panel.add(roleField);
 
-        panel.add(new JLabel("Entry Time (HH:MM:SS):"));
-        panel.add(entryTimeField);
+        panel.add(new JLabel("Join Date (YYYY-MM-DD):"));
+        panel.add(joinDateField);
 
-        panel.add(new JLabel("Exit Time (HH:MM:SS):"));
-        panel.add(exitTimeField);
-
-        panel.add(new JLabel("Purpose:"));
-        panel.add(purposeField);
+        panel.add(new JLabel("Salary:"));
+        panel.add(salaryField);
 
         panel.add(new JLabel("Phone:"));
         panel.add(phoneField);
@@ -139,39 +144,40 @@ public class VisitorPage extends JFrame {
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Add Visitor",
+                "Add Staff",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
         if (result == JOptionPane.OK_OPTION) {
 
             try {
+
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "INSERT INTO VISITOR " +
-                        "(flat_id, visitor_name, entry_time, exit_time, purpose, phone) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO STAFF " +
+                        "(name, role, join_date, salary, phone) " +
+                        "VALUES (?, ?, ?, ?, ?)";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setInt(1, Integer.parseInt(flatIdField.getText()));
-                ps.setString(2, visitorNameField.getText());
-                ps.setString(3, entryTimeField.getText());
-                ps.setString(4, exitTimeField.getText());
-                ps.setString(5, purposeField.getText());
-                ps.setString(6, phoneField.getText());
+                ps.setString(1, nameField.getText());
+                ps.setString(2, roleField.getText());
+                ps.setString(3, joinDateField.getText());
+                ps.setDouble(4, Double.parseDouble(salaryField.getText()));
+                ps.setString(5, phoneField.getText());
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Visitor added successfully!"
+                        "Staff added successfully!"
                 );
 
                 model.setRowCount(0);
-                loadVisitors();
+                loadStaff();
 
             } catch (Exception e) {
+
                 JOptionPane.showMessageDialog(
                         this,
                         "Error: " + e.getMessage()
@@ -180,54 +186,50 @@ public class VisitorPage extends JFrame {
         }
     }
 
-    private void editVisitor() {
+    private void editStaff() {
 
         int row = table.getSelectedRow();
 
         if (row == -1) {
+
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a visitor first."
+                    "Please select a staff member first."
             );
+
             return;
         }
 
-        int visitorId = (int) model.getValueAt(row, 0);
+        int staffId = (int) model.getValueAt(row, 0);
 
-        JTextField flatIdField =
+        JTextField nameField =
                 new JTextField(model.getValueAt(row, 1).toString());
 
-        JTextField visitorNameField =
+        JTextField roleField =
                 new JTextField(model.getValueAt(row, 2).toString());
 
-        JTextField entryTimeField =
+        JTextField joinDateField =
                 new JTextField(model.getValueAt(row, 3).toString());
 
-        JTextField exitTimeField =
+        JTextField salaryField =
                 new JTextField(model.getValueAt(row, 4).toString());
 
-        JTextField purposeField =
+        JTextField phoneField =
                 new JTextField(model.getValueAt(row, 5).toString());
 
-        JTextField phoneField =
-                new JTextField(model.getValueAt(row, 6).toString());
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        panel.add(new JLabel("Name:"));
+        panel.add(nameField);
 
-        panel.add(new JLabel("Flat ID:"));
-        panel.add(flatIdField);
+        panel.add(new JLabel("Role:"));
+        panel.add(roleField);
 
-        panel.add(new JLabel("Visitor Name:"));
-        panel.add(visitorNameField);
+        panel.add(new JLabel("Join Date (YYYY-MM-DD):"));
+        panel.add(joinDateField);
 
-        panel.add(new JLabel("Entry Time (HH:MM:SS):"));
-        panel.add(entryTimeField);
-
-        panel.add(new JLabel("Exit Time (HH:MM:SS):"));
-        panel.add(exitTimeField);
-
-        panel.add(new JLabel("Purpose:"));
-        panel.add(purposeField);
+        panel.add(new JLabel("Salary:"));
+        panel.add(salaryField);
 
         panel.add(new JLabel("Phone:"));
         panel.add(phoneField);
@@ -235,41 +237,41 @@ public class VisitorPage extends JFrame {
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Edit Visitor",
+                "Edit Staff",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
         if (result == JOptionPane.OK_OPTION) {
 
             try {
+
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "UPDATE VISITOR SET " +
-                        "flat_id=?, visitor_name=?, entry_time=?, " +
-                        "exit_time=?, purpose=?, phone=? " +
-                        "WHERE visitor_id=?";
+                String sql = "UPDATE STAFF SET " +
+                        "name=?, role=?, join_date=?, salary=?, phone=? " +
+                        "WHERE staff_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setInt(1, Integer.parseInt(flatIdField.getText()));
-                ps.setString(2, visitorNameField.getText());
-                ps.setString(3, entryTimeField.getText());
-                ps.setString(4, exitTimeField.getText());
-                ps.setString(5, purposeField.getText());
-                ps.setString(6, phoneField.getText());
-                ps.setInt(7, visitorId);
+                ps.setString(1, nameField.getText());
+                ps.setString(2, roleField.getText());
+                ps.setString(3, joinDateField.getText());
+                ps.setDouble(4, Double.parseDouble(salaryField.getText()));
+                ps.setString(5, phoneField.getText());
+                ps.setInt(6, staffId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Visitor updated successfully!"
+                        "Staff updated successfully!"
                 );
 
                 model.setRowCount(0);
-                loadVisitors();
+                loadStaff();
 
             } catch (Exception e) {
+
                 JOptionPane.showMessageDialog(
                         this,
                         "Error: " + e.getMessage()
@@ -278,23 +280,25 @@ public class VisitorPage extends JFrame {
         }
     }
 
-    private void deleteVisitor() {
+    private void deleteStaff() {
 
         int row = table.getSelectedRow();
 
         if (row == -1) {
+
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a visitor first."
+                    "Please select a staff member first."
             );
+
             return;
         }
 
-        int visitorId = (int) model.getValueAt(row, 0);
+        int staffId = (int) model.getValueAt(row, 0);
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete this visitor?",
+                "Are you sure you want to delete this staff member?",
                 "Confirm Delete",
                 JOptionPane.YES_NO_OPTION
         );
@@ -302,24 +306,28 @@ public class VisitorPage extends JFrame {
         if (confirm == JOptionPane.YES_OPTION) {
 
             try {
+
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "DELETE FROM VISITOR WHERE visitor_id=?";
+                String sql =
+                        "DELETE FROM STAFF WHERE staff_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
-                ps.setInt(1, visitorId);
+
+                ps.setInt(1, staffId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Visitor deleted successfully!"
+                        "Staff deleted successfully!"
                 );
 
                 model.setRowCount(0);
-                loadVisitors();
+                loadStaff();
 
             } catch (Exception e) {
+
                 JOptionPane.showMessageDialog(
                         this,
                         "Error: " + e.getMessage()
@@ -328,18 +336,19 @@ public class VisitorPage extends JFrame {
         }
     }
 
-    private void searchVisitors(String keyword) {
+    private void searchStaff(String keyword) {
 
         model.setRowCount(0);
 
         try {
+
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM VISITOR " +
-                    "WHERE visitor_name LIKE ? " +
-                    "OR purpose LIKE ? " +
+            String sql = "SELECT * FROM STAFF " +
+                    "WHERE name LIKE ? " +
+                    "OR role LIKE ? " +
                     "OR phone LIKE ? " +
-                    "OR flat_id LIKE ?";
+                    "OR staff_id LIKE ?";
 
             PreparedStatement ps = con.prepareStatement(sql);
 
@@ -355,17 +364,17 @@ public class VisitorPage extends JFrame {
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                        rs.getInt("visitor_id"),
-                        rs.getInt("flat_id"),
-                        rs.getString("visitor_name"),
-                        rs.getTime("entry_time"),
-                        rs.getTime("exit_time"),
-                        rs.getString("purpose"),
+                        rs.getInt("staff_id"),
+                        rs.getString("name"),
+                        rs.getString("role"),
+                        rs.getDate("join_date"),
+                        rs.getDouble("salary"),
                         rs.getString("phone")
                 });
             }
 
         } catch (Exception e) {
+
             JOptionPane.showMessageDialog(
                     this,
                     "Error: " + e.getMessage()
@@ -374,6 +383,6 @@ public class VisitorPage extends JFrame {
     }
 
     public static void main(String[] args) {
-        new VisitorPage();
+        new StaffPage();
     }
 }

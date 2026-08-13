@@ -1,16 +1,19 @@
+package admin;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 
-public class ComplaintPage extends JFrame {
+public class PaymentPage extends JFrame {
 
     JTable table;
     DefaultTableModel model;
 
-    public ComplaintPage() {
+    public PaymentPage() {
 
-        setTitle("Complaints");
+        setTitle("Payments");
         setSize(1000, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -18,17 +21,17 @@ public class ComplaintPage extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel title = new JLabel("Complaints");
+        JLabel title = new JLabel("Payments");
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        JButton addButton = new JButton("+ Add Complaint");
-        addButton.addActionListener(e -> openAddComplaintForm());
+        JButton addButton = new JButton("+ Add Payment");
+        addButton.addActionListener(e -> openAddPaymentForm());
 
         JButton editButton = new JButton("Edit");
-        editButton.addActionListener(e -> editComplaint());
+        editButton.addActionListener(e -> editPayment());
 
         JButton deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(e -> deleteComplaint());
+        deleteButton.addActionListener(e -> deletePayment());
 
         JPanel buttons = new JPanel();
         buttons.add(addButton);
@@ -45,7 +48,7 @@ public class ComplaintPage extends JFrame {
 
         JButton searchButton = new JButton("Search");
         searchButton.addActionListener(
-                e -> searchComplaints(searchField.getText())
+                e -> searchPayments(searchField.getText())
         );
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -62,12 +65,11 @@ public class ComplaintPage extends JFrame {
         // Table
         String[] columns = {
                 "ID",
-                "Resident ID",
-                "Staff ID",
-                "Date",
-                "Complaint Type",
-                "Description",
-                "Status"
+                "Maintenance ID",
+                "Payment Date",
+                "Payment Mode",
+                "Amount Paid",
+                "Payment Status"
         };
 
         model = new DefaultTableModel(columns, 0);
@@ -77,17 +79,19 @@ public class ComplaintPage extends JFrame {
 
         add(mainPanel);
 
-        loadComplaints();
+        loadPayments();
 
         setVisible(true);
     }
 
-    private void loadComplaints() {
+    // LOAD PAYMENTS
+    private void loadPayments() {
 
         try {
+
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM COMPLAINTS";
+            String sql = "SELECT * FROM PAYMENT";
 
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(sql);
@@ -95,13 +99,12 @@ public class ComplaintPage extends JFrame {
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                        rs.getInt("complaint_id"),
-                        rs.getInt("resident_id"),
-                        rs.getInt("staff_id"),
-                        rs.getDate("complaint_date"),
-                        rs.getString("complaint_type"),
-                        rs.getString("description"),
-                        rs.getString("status")
+                        rs.getInt("payment_id"),
+                        rs.getInt("maintenance_id"),
+                        rs.getDate("payment_date"),
+                        rs.getString("payment_mode"),
+                        rs.getBigDecimal("amount_paid"),
+                        rs.getString("payment_status")
                 });
             }
 
@@ -114,39 +117,36 @@ public class ComplaintPage extends JFrame {
         }
     }
 
-    private void openAddComplaintForm() {
+    // ADD PAYMENT
+    private void openAddPaymentForm() {
 
-        JTextField residentIdField = new JTextField();
-        JTextField staffIdField = new JTextField();
+        JTextField maintenanceIdField = new JTextField();
         JTextField dateField = new JTextField();
-        JTextField typeField = new JTextField();
-        JTextField descriptionField = new JTextField();
+        JTextField modeField = new JTextField();
+        JTextField amountField = new JTextField();
         JTextField statusField = new JTextField();
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
 
-        panel.add(new JLabel("Resident ID:"));
-        panel.add(residentIdField);
+        panel.add(new JLabel("Maintenance ID:"));
+        panel.add(maintenanceIdField);
 
-        panel.add(new JLabel("Staff ID:"));
-        panel.add(staffIdField);
-
-        panel.add(new JLabel("Complaint Date (YYYY-MM-DD):"));
+        panel.add(new JLabel("Payment Date (YYYY-MM-DD):"));
         panel.add(dateField);
 
-        panel.add(new JLabel("Complaint Type:"));
-        panel.add(typeField);
+        panel.add(new JLabel("Payment Mode:"));
+        panel.add(modeField);
 
-        panel.add(new JLabel("Description:"));
-        panel.add(descriptionField);
+        panel.add(new JLabel("Amount Paid:"));
+        panel.add(amountField);
 
-        panel.add(new JLabel("Status:"));
+        panel.add(new JLabel("Payment Status:"));
         panel.add(statusField);
 
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Add Complaint",
+                "Add Payment",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
@@ -156,29 +156,29 @@ public class ComplaintPage extends JFrame {
 
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "INSERT INTO COMPLAINTS " +
-                        "(resident_id, staff_id, complaint_date, " +
-                        "complaint_type, description, status) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO PAYMENT " +
+                        "(maintenance_id, payment_date, payment_mode, " +
+                        "amount_paid, payment_status) " +
+                        "VALUES (?, ?, ?, ?, ?)";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setInt(1, Integer.parseInt(residentIdField.getText()));
-                ps.setInt(2, Integer.parseInt(staffIdField.getText()));
-                ps.setString(3, dateField.getText());
-                ps.setString(4, typeField.getText());
-                ps.setString(5, descriptionField.getText());
-                ps.setString(6, statusField.getText());
+                ps.setInt(1, Integer.parseInt(maintenanceIdField.getText()));
+                ps.setString(2, dateField.getText());
+                ps.setString(3, modeField.getText());
+                ps.setBigDecimal(4,
+                        new java.math.BigDecimal(amountField.getText()));
+                ps.setString(5, statusField.getText());
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Complaint added successfully!"
+                        "Payment added successfully!"
                 );
 
                 model.setRowCount(0);
-                loadComplaints();
+                loadPayments();
 
             } catch (Exception e) {
 
@@ -190,7 +190,8 @@ public class ComplaintPage extends JFrame {
         }
     }
 
-    private void editComplaint() {
+    // EDIT PAYMENT
+    private void editPayment() {
 
         int row = table.getSelectedRow();
 
@@ -198,56 +199,50 @@ public class ComplaintPage extends JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a complaint first."
+                    "Please select a payment first."
             );
 
             return;
         }
 
-        int complaintId = (int) model.getValueAt(row, 0);
+        int paymentId = (int) model.getValueAt(row, 0);
 
-        JTextField residentIdField =
+        JTextField maintenanceIdField =
                 new JTextField(model.getValueAt(row, 1).toString());
 
-        JTextField staffIdField =
+        JTextField dateField =
                 new JTextField(model.getValueAt(row, 2).toString());
 
-        JTextField dateField =
+        JTextField modeField =
                 new JTextField(model.getValueAt(row, 3).toString());
 
-        JTextField typeField =
+        JTextField amountField =
                 new JTextField(model.getValueAt(row, 4).toString());
 
-        JTextField descriptionField =
+        JTextField statusField =
                 new JTextField(model.getValueAt(row, 5).toString());
 
-        JTextField statusField =
-                new JTextField(model.getValueAt(row, 6).toString());
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        panel.add(new JLabel("Maintenance ID:"));
+        panel.add(maintenanceIdField);
 
-        panel.add(new JLabel("Resident ID:"));
-        panel.add(residentIdField);
-
-        panel.add(new JLabel("Staff ID:"));
-        panel.add(staffIdField);
-
-        panel.add(new JLabel("Complaint Date (YYYY-MM-DD):"));
+        panel.add(new JLabel("Payment Date (YYYY-MM-DD):"));
         panel.add(dateField);
 
-        panel.add(new JLabel("Complaint Type:"));
-        panel.add(typeField);
+        panel.add(new JLabel("Payment Mode:"));
+        panel.add(modeField);
 
-        panel.add(new JLabel("Description:"));
-        panel.add(descriptionField);
+        panel.add(new JLabel("Amount Paid:"));
+        panel.add(amountField);
 
-        panel.add(new JLabel("Status:"));
+        panel.add(new JLabel("Payment Status:"));
         panel.add(statusField);
 
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Edit Complaint",
+                "Edit Payment",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
@@ -257,30 +252,30 @@ public class ComplaintPage extends JFrame {
 
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "UPDATE COMPLAINTS SET " +
-                        "resident_id=?, staff_id=?, complaint_date=?, " +
-                        "complaint_type=?, description=?, status=? " +
-                        "WHERE complaint_id=?";
+                String sql = "UPDATE PAYMENT SET " +
+                        "maintenance_id=?, payment_date=?, payment_mode=?, " +
+                        "amount_paid=?, payment_status=? " +
+                        "WHERE payment_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setInt(1, Integer.parseInt(residentIdField.getText()));
-                ps.setInt(2, Integer.parseInt(staffIdField.getText()));
-                ps.setString(3, dateField.getText());
-                ps.setString(4, typeField.getText());
-                ps.setString(5, descriptionField.getText());
-                ps.setString(6, statusField.getText());
-                ps.setInt(7, complaintId);
+                ps.setInt(1, Integer.parseInt(maintenanceIdField.getText()));
+                ps.setString(2, dateField.getText());
+                ps.setString(3, modeField.getText());
+                ps.setBigDecimal(4,
+                        new java.math.BigDecimal(amountField.getText()));
+                ps.setString(5, statusField.getText());
+                ps.setInt(6, paymentId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Complaint updated successfully!"
+                        "Payment updated successfully!"
                 );
 
                 model.setRowCount(0);
-                loadComplaints();
+                loadPayments();
 
             } catch (Exception e) {
 
@@ -292,7 +287,8 @@ public class ComplaintPage extends JFrame {
         }
     }
 
-    private void deleteComplaint() {
+    // DELETE PAYMENT
+    private void deletePayment() {
 
         int row = table.getSelectedRow();
 
@@ -300,17 +296,17 @@ public class ComplaintPage extends JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a complaint first."
+                    "Please select a payment first."
             );
 
             return;
         }
 
-        int complaintId = (int) model.getValueAt(row, 0);
+        int paymentId = (int) model.getValueAt(row, 0);
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete this complaint?",
+                "Are you sure you want to delete this payment?",
                 "Confirm Delete",
                 JOptionPane.YES_NO_OPTION
         );
@@ -322,21 +318,21 @@ public class ComplaintPage extends JFrame {
                 Connection con = DatabaseConnection.getConnection();
 
                 String sql =
-                        "DELETE FROM COMPLAINTS WHERE complaint_id=?";
+                        "DELETE FROM PAYMENT WHERE payment_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setInt(1, complaintId);
+                ps.setInt(1, paymentId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Complaint deleted successfully!"
+                        "Payment deleted successfully!"
                 );
 
                 model.setRowCount(0);
-                loadComplaints();
+                loadPayments();
 
             } catch (Exception e) {
 
@@ -348,7 +344,8 @@ public class ComplaintPage extends JFrame {
         }
     }
 
-    private void searchComplaints(String keyword) {
+    // SEARCH PAYMENTS
+    private void searchPayments(String keyword) {
 
         model.setRowCount(0);
 
@@ -356,12 +353,10 @@ public class ComplaintPage extends JFrame {
 
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM COMPLAINTS " +
-                    "WHERE complaint_type LIKE ? " +
-                    "OR description LIKE ? " +
-                    "OR status LIKE ? " +
-                    "OR resident_id LIKE ? " +
-                    "OR staff_id LIKE ?";
+            String sql = "SELECT * FROM PAYMENT " +
+                    "WHERE payment_mode LIKE ? " +
+                    "OR payment_status LIKE ? " +
+                    "OR maintenance_id LIKE ?";
 
             PreparedStatement ps = con.prepareStatement(sql);
 
@@ -370,21 +365,18 @@ public class ComplaintPage extends JFrame {
             ps.setString(1, search);
             ps.setString(2, search);
             ps.setString(3, search);
-            ps.setString(4, search);
-            ps.setString(5, search);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                        rs.getInt("complaint_id"),
-                        rs.getInt("resident_id"),
-                        rs.getInt("staff_id"),
-                        rs.getDate("complaint_date"),
-                        rs.getString("complaint_type"),
-                        rs.getString("description"),
-                        rs.getString("status")
+                        rs.getInt("payment_id"),
+                        rs.getInt("maintenance_id"),
+                        rs.getDate("payment_date"),
+                        rs.getString("payment_mode"),
+                        rs.getBigDecimal("amount_paid"),
+                        rs.getString("payment_status")
                 });
             }
 
@@ -398,6 +390,6 @@ public class ComplaintPage extends JFrame {
     }
 
     public static void main(String[] args) {
-        new ComplaintPage();
+        new PaymentPage();
     }
 }

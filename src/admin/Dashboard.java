@@ -1,3 +1,8 @@
+package admin;
+import util.DatabaseConnection;
+
+import resident.ResidentsPage;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -36,7 +41,7 @@ public class Dashboard extends JFrame {
         menu.setBorder(BorderFactory.createEmptyBorder(10, 15, 20, 15));
 
         String[] buttons = {
-                "Dashboard",
+                "admin.Dashboard",
                 "Residents",
                 "Flats",
                 "Visitors",
@@ -99,7 +104,7 @@ public class Dashboard extends JFrame {
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
 
-        JLabel title = new JLabel("Dashboard");
+        JLabel title = new JLabel("admin.Dashboard");
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
         JLabel welcome = new JLabel("Welcome, Admin 👋");

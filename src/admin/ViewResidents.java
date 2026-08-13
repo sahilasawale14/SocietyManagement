@@ -1,3 +1,6 @@
+package admin;
+import util.DatabaseConnection;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;

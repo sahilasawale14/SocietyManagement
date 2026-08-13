@@ -1,16 +1,20 @@
+package admin;
+import util.DatabaseConnection;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 
-public class FlatPage extends JFrame {
+public class VisitorPage extends JFrame {
 
     JTable table;
     DefaultTableModel model;
 
-    public FlatPage() {
+    public VisitorPage() {
 
-        setTitle("Flats");
+        setTitle("Visitors");
         setSize(900, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -18,17 +22,17 @@ public class FlatPage extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel title = new JLabel("Flats");
+        JLabel title = new JLabel("Visitors");
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        JButton addButton = new JButton("+ Add Flat");
-        addButton.addActionListener(e -> openAddFlatForm());
+        JButton addButton = new JButton("+ Add Visitor");
+        addButton.addActionListener(e -> openAddVisitorForm());
 
         JButton editButton = new JButton("Edit");
-        editButton.addActionListener(e -> editFlat());
+        editButton.addActionListener(e -> editVisitor());
 
         JButton deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(e -> deleteFlat());
+        deleteButton.addActionListener(e -> deleteVisitor());
 
         JPanel buttons = new JPanel();
         buttons.add(addButton);
@@ -45,7 +49,7 @@ public class FlatPage extends JFrame {
 
         JButton searchButton = new JButton("Search");
         searchButton.addActionListener(
-                e -> searchFlats(searchField.getText())
+                e -> searchVisitors(searchField.getText())
         );
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -61,8 +65,8 @@ public class FlatPage extends JFrame {
 
         // Table
         String[] columns = {
-                "ID", "Flat No", "Block",
-                "Floor", "Owner ID", "Occupancy"
+                "ID", "Flat ID", "Visitor Name",
+                "Entry Time", "Exit Time", "Purpose", "Phone"
         };
 
         model = new DefaultTableModel(columns, 0);
@@ -72,29 +76,30 @@ public class FlatPage extends JFrame {
 
         add(mainPanel);
 
-        loadFlats();
+        loadVisitors();
 
         setVisible(true);
     }
 
-    private void loadFlats() {
+    private void loadVisitors() {
 
         try {
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM FLAT";
+            String sql = "SELECT * FROM VISITOR";
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(sql);
 
             while (rs.next()) {
 
                 model.addRow(new Object[]{
+                        rs.getInt("visitor_id"),
                         rs.getInt("flat_id"),
-                        rs.getString("flat_no"),
-                        rs.getString("block"),
-                        rs.getInt("floor"),
-                        rs.getInt("owner_id"),
-                        rs.getString("occupancy_status")
+                        rs.getString("visitor_name"),
+                        rs.getTime("entry_time"),
+                        rs.getTime("exit_time"),
+                        rs.getString("purpose"),
+                        rs.getString("phone")
                 });
             }
 
@@ -106,35 +111,39 @@ public class FlatPage extends JFrame {
         }
     }
 
-    private void openAddFlatForm() {
+    private void openAddVisitorForm() {
 
-        JTextField flatNoField = new JTextField();
-        JTextField blockField = new JTextField();
-        JTextField floorField = new JTextField();
-        JTextField ownerIdField = new JTextField();
-        JTextField occupancyField = new JTextField();
+        JTextField flatIdField = new JTextField();
+        JTextField visitorNameField = new JTextField();
+        JTextField entryTimeField = new JTextField();
+        JTextField exitTimeField = new JTextField();
+        JTextField purposeField = new JTextField();
+        JTextField phoneField = new JTextField();
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
 
-        panel.add(new JLabel("Flat No:"));
-        panel.add(flatNoField);
+        panel.add(new JLabel("Flat ID:"));
+        panel.add(flatIdField);
 
-        panel.add(new JLabel("Block:"));
-        panel.add(blockField);
+        panel.add(new JLabel("Visitor Name:"));
+        panel.add(visitorNameField);
 
-        panel.add(new JLabel("Floor:"));
-        panel.add(floorField);
+        panel.add(new JLabel("Entry Time (HH:MM:SS):"));
+        panel.add(entryTimeField);
 
-        panel.add(new JLabel("Owner ID:"));
-        panel.add(ownerIdField);
+        panel.add(new JLabel("Exit Time (HH:MM:SS):"));
+        panel.add(exitTimeField);
 
-        panel.add(new JLabel("Occupancy Status:"));
-        panel.add(occupancyField);
+        panel.add(new JLabel("Purpose:"));
+        panel.add(purposeField);
+
+        panel.add(new JLabel("Phone:"));
+        panel.add(phoneField);
 
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Add Flat",
+                "Add Visitor",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
@@ -143,27 +152,28 @@ public class FlatPage extends JFrame {
             try {
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "INSERT INTO FLAT " +
-                        "(flat_no, block, floor, owner_id, occupancy_status) " +
-                        "VALUES (?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO VISITOR " +
+                        "(flat_id, visitor_name, entry_time, exit_time, purpose, phone) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setString(1, flatNoField.getText());
-                ps.setString(2, blockField.getText());
-                ps.setInt(3, Integer.parseInt(floorField.getText()));
-                ps.setInt(4, Integer.parseInt(ownerIdField.getText()));
-                ps.setString(5, occupancyField.getText());
+                ps.setInt(1, Integer.parseInt(flatIdField.getText()));
+                ps.setString(2, visitorNameField.getText());
+                ps.setString(3, entryTimeField.getText());
+                ps.setString(4, exitTimeField.getText());
+                ps.setString(5, purposeField.getText());
+                ps.setString(6, phoneField.getText());
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Flat added successfully!"
+                        "Visitor added successfully!"
                 );
 
                 model.setRowCount(0);
-                loadFlats();
+                loadVisitors();
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(
@@ -174,56 +184,62 @@ public class FlatPage extends JFrame {
         }
     }
 
-    private void editFlat() {
+    private void editVisitor() {
 
         int row = table.getSelectedRow();
 
         if (row == -1) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a flat first."
+                    "Please select a visitor first."
             );
             return;
         }
 
-        int flatId = (int) model.getValueAt(row, 0);
+        int visitorId = (int) model.getValueAt(row, 0);
 
-        JTextField flatNoField =
+        JTextField flatIdField =
                 new JTextField(model.getValueAt(row, 1).toString());
 
-        JTextField blockField =
+        JTextField visitorNameField =
                 new JTextField(model.getValueAt(row, 2).toString());
 
-        JTextField floorField =
+        JTextField entryTimeField =
                 new JTextField(model.getValueAt(row, 3).toString());
 
-        JTextField ownerIdField =
+        JTextField exitTimeField =
                 new JTextField(model.getValueAt(row, 4).toString());
 
-        JTextField occupancyField =
+        JTextField purposeField =
                 new JTextField(model.getValueAt(row, 5).toString());
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JTextField phoneField =
+                new JTextField(model.getValueAt(row, 6).toString());
 
-        panel.add(new JLabel("Flat No:"));
-        panel.add(flatNoField);
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
 
-        panel.add(new JLabel("Block:"));
-        panel.add(blockField);
+        panel.add(new JLabel("Flat ID:"));
+        panel.add(flatIdField);
 
-        panel.add(new JLabel("Floor:"));
-        panel.add(floorField);
+        panel.add(new JLabel("Visitor Name:"));
+        panel.add(visitorNameField);
 
-        panel.add(new JLabel("Owner ID:"));
-        panel.add(ownerIdField);
+        panel.add(new JLabel("Entry Time (HH:MM:SS):"));
+        panel.add(entryTimeField);
 
-        panel.add(new JLabel("Occupancy Status:"));
-        panel.add(occupancyField);
+        panel.add(new JLabel("Exit Time (HH:MM:SS):"));
+        panel.add(exitTimeField);
+
+        panel.add(new JLabel("Purpose:"));
+        panel.add(purposeField);
+
+        panel.add(new JLabel("Phone:"));
+        panel.add(phoneField);
 
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Edit Flat",
+                "Edit Visitor",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
@@ -232,28 +248,30 @@ public class FlatPage extends JFrame {
             try {
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "UPDATE FLAT SET " +
-                        "flat_no=?, block=?, floor=?, owner_id=?, " +
-                        "occupancy_status=? WHERE flat_id=?";
+                String sql = "UPDATE VISITOR SET " +
+                        "flat_id=?, visitor_name=?, entry_time=?, " +
+                        "exit_time=?, purpose=?, phone=? " +
+                        "WHERE visitor_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setString(1, flatNoField.getText());
-                ps.setString(2, blockField.getText());
-                ps.setInt(3, Integer.parseInt(floorField.getText()));
-                ps.setInt(4, Integer.parseInt(ownerIdField.getText()));
-                ps.setString(5, occupancyField.getText());
-                ps.setInt(6, flatId);
+                ps.setInt(1, Integer.parseInt(flatIdField.getText()));
+                ps.setString(2, visitorNameField.getText());
+                ps.setString(3, entryTimeField.getText());
+                ps.setString(4, exitTimeField.getText());
+                ps.setString(5, purposeField.getText());
+                ps.setString(6, phoneField.getText());
+                ps.setInt(7, visitorId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Flat updated successfully!"
+                        "Visitor updated successfully!"
                 );
 
                 model.setRowCount(0);
-                loadFlats();
+                loadVisitors();
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(
@@ -264,23 +282,23 @@ public class FlatPage extends JFrame {
         }
     }
 
-    private void deleteFlat() {
+    private void deleteVisitor() {
 
         int row = table.getSelectedRow();
 
         if (row == -1) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a flat first."
+                    "Please select a visitor first."
             );
             return;
         }
 
-        int flatId = (int) model.getValueAt(row, 0);
+        int visitorId = (int) model.getValueAt(row, 0);
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete this flat?",
+                "Are you sure you want to delete this visitor?",
                 "Confirm Delete",
                 JOptionPane.YES_NO_OPTION
         );
@@ -290,20 +308,20 @@ public class FlatPage extends JFrame {
             try {
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "DELETE FROM FLAT WHERE flat_id=?";
+                String sql = "DELETE FROM VISITOR WHERE visitor_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
-                ps.setInt(1, flatId);
+                ps.setInt(1, visitorId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Flat deleted successfully!"
+                        "Visitor deleted successfully!"
                 );
 
                 model.setRowCount(0);
-                loadFlats();
+                loadVisitors();
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(
@@ -314,17 +332,18 @@ public class FlatPage extends JFrame {
         }
     }
 
-    private void searchFlats(String keyword) {
+    private void searchVisitors(String keyword) {
 
         model.setRowCount(0);
 
         try {
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM FLAT " +
-                    "WHERE flat_no LIKE ? " +
-                    "OR block LIKE ? " +
-                    "OR occupancy_status LIKE ?";
+            String sql = "SELECT * FROM VISITOR " +
+                    "WHERE visitor_name LIKE ? " +
+                    "OR purpose LIKE ? " +
+                    "OR phone LIKE ? " +
+                    "OR flat_id LIKE ?";
 
             PreparedStatement ps = con.prepareStatement(sql);
 
@@ -333,18 +352,20 @@ public class FlatPage extends JFrame {
             ps.setString(1, search);
             ps.setString(2, search);
             ps.setString(3, search);
+            ps.setString(4, search);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
 
                 model.addRow(new Object[]{
+                        rs.getInt("visitor_id"),
                         rs.getInt("flat_id"),
-                        rs.getString("flat_no"),
-                        rs.getString("block"),
-                        rs.getInt("floor"),
-                        rs.getInt("owner_id"),
-                        rs.getString("occupancy_status")
+                        rs.getString("visitor_name"),
+                        rs.getTime("entry_time"),
+                        rs.getTime("exit_time"),
+                        rs.getString("purpose"),
+                        rs.getString("phone")
                 });
             }
 
@@ -357,6 +378,6 @@ public class FlatPage extends JFrame {
     }
 
     public static void main(String[] args) {
-        new FlatPage();
+        new VisitorPage();
     }
 }

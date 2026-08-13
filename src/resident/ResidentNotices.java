@@ -1,30 +1,29 @@
+package resident;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 
-public class ResidentPayments extends JFrame {
+public class ResidentNotices extends JFrame {
 
     JTable table;
     DefaultTableModel model;
-    int residentId;
 
-    public ResidentPayments(int residentId) {
+    public ResidentNotices() {
 
-        this.residentId = residentId;
-
-        setTitle("My Payments");
+        setTitle("Society Notices");
         setSize(850, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         model = new DefaultTableModel(
                 new String[]{
-                        "Payment ID",
-                        "Date",
-                        "Payment Mode",
-                        "Amount",
-                        "Status"
+                        "Notice ID",
+                        "Title",
+                        "Description",
+                        "Publish Date"
                 }, 0
         );
 
@@ -32,12 +31,12 @@ public class ResidentPayments extends JFrame {
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        loadPayments();
+        loadNotices();
 
         setVisible(true);
     }
 
-    private void loadPayments() {
+    private void loadNotices() {
 
         model.setRowCount(0);
 
@@ -45,23 +44,20 @@ public class ResidentPayments extends JFrame {
 
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT payment_id, payment_date, payment_mode, " +
-                    "amount_paid, payment_status " +
-                    "FROM payment WHERE resident_id = ?";
+            String sql = "SELECT notice_id, title, description, publish_date " +
+                    "FROM notice ORDER BY publish_date DESC";
 
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, residentId);
 
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                        rs.getInt("payment_id"),
-                        rs.getDate("payment_date"),
-                        rs.getString("payment_mode"),
-                        rs.getBigDecimal("amount_paid"),
-                        rs.getString("payment_status")
+                        rs.getInt("notice_id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getDate("publish_date")
                 });
             }
 

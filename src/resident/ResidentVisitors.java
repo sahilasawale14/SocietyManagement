@@ -1,3 +1,7 @@
+package resident;
+import util.DatabaseConnection;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;

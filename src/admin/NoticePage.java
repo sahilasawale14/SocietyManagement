@@ -1,16 +1,19 @@
+package admin;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 
-public class StaffPage extends JFrame {
+public class NoticePage extends JFrame {
 
     JTable table;
     DefaultTableModel model;
 
-    public StaffPage() {
+    public NoticePage() {
 
-        setTitle("Staff");
+        setTitle("Notices");
         setSize(1000, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -18,17 +21,17 @@ public class StaffPage extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel title = new JLabel("Staff");
+        JLabel title = new JLabel("Notices");
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        JButton addButton = new JButton("+ Add Staff");
-        addButton.addActionListener(e -> openAddStaffForm());
+        JButton addButton = new JButton("+ Add Notice");
+        addButton.addActionListener(e -> openAddNoticeForm());
 
         JButton editButton = new JButton("Edit");
-        editButton.addActionListener(e -> editStaff());
+        editButton.addActionListener(e -> editNotice());
 
         JButton deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(e -> deleteStaff());
+        deleteButton.addActionListener(e -> deleteNotice());
 
         JPanel buttons = new JPanel();
         buttons.add(addButton);
@@ -45,7 +48,7 @@ public class StaffPage extends JFrame {
 
         JButton searchButton = new JButton("Search");
         searchButton.addActionListener(
-                e -> searchStaff(searchField.getText())
+                e -> searchNotices(searchField.getText())
         );
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -61,12 +64,11 @@ public class StaffPage extends JFrame {
 
         // Table
         String[] columns = {
-                "Staff ID",
-                "Name",
-                "Role",
-                "Join Date",
-                "Salary",
-                "Phone"
+                "ID",
+                "Admin ID",
+                "Title",
+                "Description",
+                "Publish Date"
         };
 
         model = new DefaultTableModel(columns, 0);
@@ -76,18 +78,20 @@ public class StaffPage extends JFrame {
 
         add(mainPanel);
 
-        loadStaff();
+        loadNotices();
 
         setVisible(true);
     }
 
-    private void loadStaff() {
+    // ================= LOAD NOTICES =================
+
+    private void loadNotices() {
 
         try {
 
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM STAFF";
+            String sql = "SELECT * FROM NOTICE";
 
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(sql);
@@ -95,12 +99,11 @@ public class StaffPage extends JFrame {
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                        rs.getInt("staff_id"),
-                        rs.getString("name"),
-                        rs.getString("role"),
-                        rs.getDate("join_date"),
-                        rs.getDouble("salary"),
-                        rs.getString("phone")
+                        rs.getInt("notice_id"),
+                        rs.getObject("admin_id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getDate("publish_date")
                 });
             }
 
@@ -113,35 +116,33 @@ public class StaffPage extends JFrame {
         }
     }
 
-    private void openAddStaffForm() {
+    // ================= ADD NOTICE =================
 
-        JTextField nameField = new JTextField();
-        JTextField roleField = new JTextField();
-        JTextField joinDateField = new JTextField();
-        JTextField salaryField = new JTextField();
-        JTextField phoneField = new JTextField();
+    private void openAddNoticeForm() {
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JTextField adminIdField = new JTextField();
+        JTextField titleField = new JTextField();
+        JTextField descriptionField = new JTextField();
+        JTextField dateField = new JTextField();
 
-        panel.add(new JLabel("Name:"));
-        panel.add(nameField);
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
 
-        panel.add(new JLabel("Role:"));
-        panel.add(roleField);
+        panel.add(new JLabel("Admin ID:"));
+        panel.add(adminIdField);
 
-        panel.add(new JLabel("Join Date (YYYY-MM-DD):"));
-        panel.add(joinDateField);
+        panel.add(new JLabel("Title:"));
+        panel.add(titleField);
 
-        panel.add(new JLabel("Salary:"));
-        panel.add(salaryField);
+        panel.add(new JLabel("Description:"));
+        panel.add(descriptionField);
 
-        panel.add(new JLabel("Phone:"));
-        panel.add(phoneField);
+        panel.add(new JLabel("Publish Date (YYYY-MM-DD):"));
+        panel.add(dateField);
 
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Add Staff",
+                "Add Notice",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
@@ -151,27 +152,32 @@ public class StaffPage extends JFrame {
 
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "INSERT INTO STAFF " +
-                        "(name, role, join_date, salary, phone) " +
-                        "VALUES (?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO NOTICE " +
+                        "(admin_id, title, description, publish_date) " +
+                        "VALUES (?, ?, ?, ?)";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setString(1, nameField.getText());
-                ps.setString(2, roleField.getText());
-                ps.setString(3, joinDateField.getText());
-                ps.setDouble(4, Double.parseDouble(salaryField.getText()));
-                ps.setString(5, phoneField.getText());
+                // Admin ID can be empty because your table allows NULL
+                if (adminIdField.getText().trim().isEmpty()) {
+                    ps.setNull(1, Types.INTEGER);
+                } else {
+                    ps.setInt(1, Integer.parseInt(adminIdField.getText()));
+                }
+
+                ps.setString(2, titleField.getText());
+                ps.setString(3, descriptionField.getText());
+                ps.setString(4, dateField.getText());
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Staff added successfully!"
+                        "Notice added successfully!"
                 );
 
                 model.setRowCount(0);
-                loadStaff();
+                loadNotices();
 
             } catch (Exception e) {
 
@@ -183,7 +189,9 @@ public class StaffPage extends JFrame {
         }
     }
 
-    private void editStaff() {
+    // ================= EDIT NOTICE =================
+
+    private void editNotice() {
 
         int row = table.getSelectedRow();
 
@@ -191,50 +199,48 @@ public class StaffPage extends JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a staff member first."
+                    "Please select a notice first."
             );
 
             return;
         }
 
-        int staffId = (int) model.getValueAt(row, 0);
+        int noticeId = (int) model.getValueAt(row, 0);
 
-        JTextField nameField =
-                new JTextField(model.getValueAt(row, 1).toString());
+        JTextField adminIdField =
+                new JTextField(
+                        model.getValueAt(row, 1) == null
+                                ? ""
+                                : model.getValueAt(row, 1).toString()
+                );
 
-        JTextField roleField =
+        JTextField titleField =
                 new JTextField(model.getValueAt(row, 2).toString());
 
-        JTextField joinDateField =
+        JTextField descriptionField =
                 new JTextField(model.getValueAt(row, 3).toString());
 
-        JTextField salaryField =
+        JTextField dateField =
                 new JTextField(model.getValueAt(row, 4).toString());
 
-        JTextField phoneField =
-                new JTextField(model.getValueAt(row, 5).toString());
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        panel.add(new JLabel("Admin ID:"));
+        panel.add(adminIdField);
 
-        panel.add(new JLabel("Name:"));
-        panel.add(nameField);
+        panel.add(new JLabel("Title:"));
+        panel.add(titleField);
 
-        panel.add(new JLabel("Role:"));
-        panel.add(roleField);
+        panel.add(new JLabel("Description:"));
+        panel.add(descriptionField);
 
-        panel.add(new JLabel("Join Date (YYYY-MM-DD):"));
-        panel.add(joinDateField);
-
-        panel.add(new JLabel("Salary:"));
-        panel.add(salaryField);
-
-        panel.add(new JLabel("Phone:"));
-        panel.add(phoneField);
+        panel.add(new JLabel("Publish Date (YYYY-MM-DD):"));
+        panel.add(dateField);
 
         int result = JOptionPane.showConfirmDialog(
                 this,
                 panel,
-                "Edit Staff",
+                "Edit Notice",
                 JOptionPane.OK_CANCEL_OPTION
         );
 
@@ -244,28 +250,32 @@ public class StaffPage extends JFrame {
 
                 Connection con = DatabaseConnection.getConnection();
 
-                String sql = "UPDATE STAFF SET " +
-                        "name=?, role=?, join_date=?, salary=?, phone=? " +
-                        "WHERE staff_id=?";
+                String sql = "UPDATE NOTICE SET " +
+                        "admin_id=?, title=?, description=?, publish_date=? " +
+                        "WHERE notice_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setString(1, nameField.getText());
-                ps.setString(2, roleField.getText());
-                ps.setString(3, joinDateField.getText());
-                ps.setDouble(4, Double.parseDouble(salaryField.getText()));
-                ps.setString(5, phoneField.getText());
-                ps.setInt(6, staffId);
+                if (adminIdField.getText().trim().isEmpty()) {
+                    ps.setNull(1, Types.INTEGER);
+                } else {
+                    ps.setInt(1, Integer.parseInt(adminIdField.getText()));
+                }
+
+                ps.setString(2, titleField.getText());
+                ps.setString(3, descriptionField.getText());
+                ps.setString(4, dateField.getText());
+                ps.setInt(5, noticeId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Staff updated successfully!"
+                        "Notice updated successfully!"
                 );
 
                 model.setRowCount(0);
-                loadStaff();
+                loadNotices();
 
             } catch (Exception e) {
 
@@ -277,7 +287,9 @@ public class StaffPage extends JFrame {
         }
     }
 
-    private void deleteStaff() {
+    // ================= DELETE NOTICE =================
+
+    private void deleteNotice() {
 
         int row = table.getSelectedRow();
 
@@ -285,17 +297,17 @@ public class StaffPage extends JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please select a staff member first."
+                    "Please select a notice first."
             );
 
             return;
         }
 
-        int staffId = (int) model.getValueAt(row, 0);
+        int noticeId = (int) model.getValueAt(row, 0);
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete this staff member?",
+                "Are you sure you want to delete this notice?",
                 "Confirm Delete",
                 JOptionPane.YES_NO_OPTION
         );
@@ -307,21 +319,21 @@ public class StaffPage extends JFrame {
                 Connection con = DatabaseConnection.getConnection();
 
                 String sql =
-                        "DELETE FROM STAFF WHERE staff_id=?";
+                        "DELETE FROM NOTICE WHERE notice_id=?";
 
                 PreparedStatement ps = con.prepareStatement(sql);
 
-                ps.setInt(1, staffId);
+                ps.setInt(1, noticeId);
 
                 ps.executeUpdate();
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Staff deleted successfully!"
+                        "Notice deleted successfully!"
                 );
 
                 model.setRowCount(0);
-                loadStaff();
+                loadNotices();
 
             } catch (Exception e) {
 
@@ -333,7 +345,9 @@ public class StaffPage extends JFrame {
         }
     }
 
-    private void searchStaff(String keyword) {
+    // ================= SEARCH NOTICES =================
+
+    private void searchNotices(String keyword) {
 
         model.setRowCount(0);
 
@@ -341,11 +355,10 @@ public class StaffPage extends JFrame {
 
             Connection con = DatabaseConnection.getConnection();
 
-            String sql = "SELECT * FROM STAFF " +
-                    "WHERE name LIKE ? " +
-                    "OR role LIKE ? " +
-                    "OR phone LIKE ? " +
-                    "OR staff_id LIKE ?";
+            String sql = "SELECT * FROM NOTICE " +
+                    "WHERE title LIKE ? " +
+                    "OR description LIKE ? " +
+                    "OR admin_id LIKE ?";
 
             PreparedStatement ps = con.prepareStatement(sql);
 
@@ -354,19 +367,17 @@ public class StaffPage extends JFrame {
             ps.setString(1, search);
             ps.setString(2, search);
             ps.setString(3, search);
-            ps.setString(4, search);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                        rs.getInt("staff_id"),
-                        rs.getString("name"),
-                        rs.getString("role"),
-                        rs.getDate("join_date"),
-                        rs.getDouble("salary"),
-                        rs.getString("phone")
+                        rs.getInt("notice_id"),
+                        rs.getObject("admin_id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getDate("publish_date")
                 });
             }
 
@@ -379,7 +390,9 @@ public class StaffPage extends JFrame {
         }
     }
 
+    // ================= MAIN =================
+
     public static void main(String[] args) {
-        new StaffPage();
+        new NoticePage();
     }
 }

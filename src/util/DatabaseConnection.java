@@ -1,3 +1,5 @@
+package util;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 
@@ -5,9 +7,7 @@ public class DatabaseConnection {
 
     public static Connection getConnection() {
 
-        String url = "jdbc" +
-                ":mysql" +
-                "://localhost:3306/society_management";
+        String url = "jdbc:mysql://localhost:3306/society_management";
         String username = "root";
         String password = "Sahil@135678";
 

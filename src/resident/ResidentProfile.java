@@ -1,3 +1,6 @@
+package resident;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;

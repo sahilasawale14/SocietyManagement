@@ -1,3 +1,6 @@
+package resident;
+import util.DatabaseConnection;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,7 +12,7 @@ public class ResidentDashboard extends JFrame {
 
         this.residentId = residentId;
 
-        setTitle("Resident Dashboard");
+        setTitle("Resident admin.Dashboard");
         setSize(900, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -17,7 +20,7 @@ public class ResidentDashboard extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(241, 245, 249));
 
-        JLabel title = new JLabel("Resident Dashboard");
+        JLabel title = new JLabel("Resident admin.Dashboard");
         title.setFont(new Font("Arial", Font.BOLD, 28));
         title.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 20));
         mainPanel.add(title, BorderLayout.NORTH);
